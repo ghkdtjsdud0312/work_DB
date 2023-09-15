@@ -261,3 +261,129 @@ SELECT SAL,
     TO_CHAR(SAL,'000999999.99') AS SAL_3,
     TO_CHAR(SAL,'999,999,00') AS SAL_4
 FROM EMP;
+
+-- TO_NUMBER() : NUMBER 타입으로 형 변환
+SELECT TO_NUMBER('1300') - TO_NUMBER('1500')
+FROM DUAL;
+
+SELECT TO_NUMBER('1300') - '1500'
+FROM DUAL;
+
+-- TO_DATE() : 문자열로 명시된 날짜를 날짜 타입으로 형 변환
+SELECT TO_DATE('22/08/20','YY/MM/DD') -- 타입이 같아야 함
+FROM DUAL;
+
+-- 1981년 6월 1일 이후에 입사한 사원 정보 출력하기
+SELECT *
+FROM EMP
+WHERE HIREDATE > TO_DATE('1981/06/01','YYYY/MM/DD');
+
+SELECT *
+FROM EMP
+WHERE HIREDATE > '01-JUN-81';
+
+-- NULL 처리 함수 : NULL은 값이 없음, 즉 할당되지 않음을 의미
+-- NULL은 0이나 공백과는 다른 의미, 연산 불가
+-- NVL(NULL인지를 검사할 열, 앞의 열 데이터가 NULL인 경우 반환할 데이터)
+SELECT EMPNO, ENAME, SAL, COMM, SAL+COMM,
+    NVL(COMM,0), SAL+NVL(COMM,0)
+FROM EMP;
+
+-- NVL2() : NULL이 아닌 경우와 NULL인 경우 모두에 대해서 값을 지정할 수 있음 
+SELECT EMPNO, ENAME, COMM, SAL,
+    NVL2(COMM, 'O','X') AS 성과급유무,
+    NVL2(COMM, SAL*12+COMM, SAL*12) AS 연봉
+FROM EMP;
+
+-- NULLIF() : 두 값이 동일하면 NULL 반환, 아니면 첫 번째 값 반환
+SELECT NULLIF(10,10), NULLIF('A','B')
+FROM DUAL;
+
+-- DECODE : 주어진 데이터 값이 조건 값과 일치하는 값 출력
+-- 일치하는 값이 없으면 기본값 출력
+SELECT EMPNO, ENAME, JOB, SAL,
+    DECODE(JOB, 
+        'MANAGER',SAL*1.1,
+        'SALESMAN',SAL*1.05,
+        'ANALYST',SAL,
+        SAL*1.03) AS 연봉인상
+FROM EMP;
+
+-- CASE문 
+SELECT EMPNO, ENAME, JOB, SAL,
+    CASE JOB
+        WHEN 'MANAGER' THEN SAL*1.1
+        WHEN 'SALESMAN' THEN SAL*1.05
+        WHEN 'ANALYST' THEN SAL
+        ELSE SAL*1.03
+    END AS 연봉인상 -- 아무것도 안 넣거나 ""
+FROM EMP;
+
+-- 열 값에 따라서 출력 값이 달라지는 CASE문
+SELECT EMPNO, ENAME, 
+    CASE 
+        WHEN COMM IS NULL THEN '해당사항없음' -- 문자열/데이터 구문이여서 ''
+        WHEN COMM = 0 THEN '수당없음'
+        WHEN COMM > 0 THEN '수당 : ' || COMM
+    END AS "성과급 기준"
+FROM EMP;
+
+-- 연습문제 -------------------------------------------
+
+-- 1번 문제
+SELECT EMPNO, 
+    RPAD(SUBSTR(EMPNO, 1, 2), 4, '*') AS MASKING_EMPNO,
+    ENAME,
+    RPAD(SUBSTR(ENAME, 1, 1), LENGTH(ENAME), '*') AS MASKING_ENAME
+FROM EMP
+WHERE LENGTH(ENAME) = 5;
+
+-- 2번 문제
+SELECT EMPNO, ENAME, SAL,
+    TRUNC(SAL / 21.5, 2) AS 일급,
+    ROUND(SAL / 21.5 / 8, 1) AS 시급
+FROM EMP; 
+
+-- 3번 문제
+-- NEXT_DAY(기준일자, 찾을 요일) : 기준일자 다음에 오는 날짜를 구하는 함수
+SELECT EMPNO, ENAME, HIREDATE,
+    TO_CHAR(NEXT_DAY(ADD_MONTHS(HIREDATE,3),'MON'),'YYYY/MM/DD') AS 정직원진급,
+    NVL(TO_CHAR(COMM),'N/A') AS COMM
+FROM EMP;
+
+-- 4번 문제
+SELECT EMPNO, ENAME, MGR, 
+    CASE 
+        WHEN MGR IS NULL THEN 0000
+        WHEN SUBSTR(MGR,1,2) = '78' THEN 8888
+        WHEN SUBSTR(MGR,1,2) = '77' THEN 7777
+        WHEN SUBSTR(MGR,1,2) = '76' THEN 6666
+        WHEN SUBSTR(MGR,1,2) = '75' THEN 5555
+        ELSE MGR
+    END AS CHG_MGR
+FROM EMP;
+
+-- 다중행 함수 : 여러 행에 대해 함수가 적용되는 하나의 결과를 나타내는 함수(집계 함수)
+-- 여러 행이 입력되어 결과가 하나의 행으로 출력
+SELECT SUM(SAL)
+    FROM EMP;
+
+SELECT SUM(SAL), ENAME
+    FROM EMP
+GROUP BY ENAME;
+
+SELECT EMPNO, DEPTNO, SUM(SAL)
+FROM EMP
+GROUP BY DEPTNO,EMPNO;
+
+--COUNT(*) : 총 몇명인지 전체 카운트 해줌
+SELECT DEPTNO, SUM(SAL), COUNT(*), ROUND(AVG(SAL),2), MAX(SAL) ,MIN(SAL)
+FROM EMP
+GROUP BY DEPTNO;
+
+SELECT SUM(SAL)
+FROM EMP
+GROUP BY DEPTNO;
+
+
+
