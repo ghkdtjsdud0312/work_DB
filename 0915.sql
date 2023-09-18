@@ -18,7 +18,7 @@ FROM DUAL; -- 테이블 없이 가상으로 실행할 때 DUAL
 SELECT JOB, SUBSTR(JOB,1,2), SUBSTR(JOB,3,2), SUBSTR(JOB,5)
 FROM EMP;
 
-SELECT JOB, 
+SELECT  JOB, 
     SUBSTR(JOB, -LENGTH(JOB)), -- 음수는 뒤에서부터 계산(-8 ~ -1) , 길이에 대한 음수값으로 역순 접근
     SUBSTR(JOB, -LENGTH(JOB),2), -- SALESMAN, -8이면 S 위치에서 길이가 2만큼 출력
     SUBSTR(JOB,-3)
@@ -384,6 +384,7 @@ GROUP BY DEPTNO;
 SELECT SUM(SAL)
 FROM EMP
 GROUP BY DEPTNO;
+
 
 
 
