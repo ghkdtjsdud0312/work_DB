@@ -316,6 +316,50 @@ WHERE SAL > ANY(SELECT SAL
                 FROM EMP
                 WHERE JOB = 'SALESMAN');
 
+SELECT EMPNO, ENAME, SAL
+FROM EMP
+WHERE SAL IN(SELECT SAL 
+                FROM EMP
+                WHERE JOB = 'SALESMAN');
+
+-- 30번 부서 사원들의 급여보다 적은 급여를 받는 사원 정보 출력
+-- ALL : 모든 조건을 만족하는 경우에 성립
+SELECT *
+FROM EMP
+WHERE SAL < ALL(SELECT SAL
+                FROM EMP
+                WHERE DEPTNO = 30);
+
+SELECT EMPNO, ENAME, SAL
+FROM EMP
+WHERE SAL > ALL (SELECT SAL 
+                 FROM EMP
+                 WHERE JOB = 'MANAGER');
+
+-- EXISTS 연산자 : 서브쿼리의 결과 값이 하나 이상 존재하면 조건식이 
+-- 모두 TRUE, 존재하지 않으면 모두 FALSE
+SELECT *
+FROM EMP
+WHERE EXISTS (SELECT DNAME
+              FROM DEPT
+              WHERE DEPTNO = 40);
+
+-- 다중 열 서브 쿼리 : 서브쿼리의 결과가 두개 이상의 컬럼으로 반환되어
+-- 메인쿼리에 전달하는 쿼리
+SELECT EMPNO, ENAME, SAL, DEPTNO
+FROM EMP
+WHERE (DEPTNO, SAL) IN (SELECT DEPTNO, SAL
+                        FROM EMP
+                        WHERE DEPTNO = 30);
+
+-- GROUP BY절이 포함된 다중열 서브쿼리
+SELECT *
+FROM EMP
+WHERE (DEPTNO, SAL) IN (SELECT DEPTNO, MAX(SAL)
+                        FROM EMP
+                        GROUP BY DEPTNO);
+
+
 
 
 
