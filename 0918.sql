@@ -169,6 +169,89 @@ SELECT EMPNO, ENAME, SAL, E.DEPTNO, DNAME, LOC
     AND E.EMPNO <= 9999
     ORDER BY E.EMPNO;
 
+-- 비등가 조인 : 동일 컬럼(열, 레코드)없이 다른 조건을 사용하여 조인 할 때 사용 (일반적인 경우는 아님)
+SELECT * FROM EMP;
+SELECT * FROM SALGRADE; 
+
+SELECT E.ENAME, E.SAL, S.GRADE
+FROM EMP E, SALGRADE S -- 두개의 테이블을 연결
+WHERE E.SAL BETWEEN S.LOSAL AND S.HISAL; -- 비등가 조인 
+
+--ANSI 조인으로 변경
+SELECT ENAME, SAL, GRADE
+FROM EMP E JOIN SALGRADE S
+ON SAL BETWEEN LOSAL AND HISAL;
 
 
- 
+ -- 자체 조인 : SELF 조인이라고도 함 
+ -- 같은 테이블을 두번 사용할때
+ -- EMP 테이블 해서 직속상관의 사원번호는 MGR을 이용해서 상관의 이름을
+ -- 알아내기 위해서 사용할 수 있음
+ SELECT E1.EMPNO,E1.ENAME, E1.MGR,
+    E2.EMPNO AS 상관사원번호,
+    E2.ENAME AS 상관이름
+    FROM EMP E1, EMP E2
+WHERE E1.MGR = E2.EMPNO;
+
+-- 외부 조인 : 동등 조인의 경우 쪽의 컬럼이 없으면 해당 행으로 표시되지 않음을
+-- 외부 조인은 내부 조인과 다르게 다른 한쪽에 값이 없어도 출력 됨
+-- 외부 조인은 동등 조인 조건을 만족하지 못해 노력되는 형을 출책하기 위해 가격 됨
+SELECT INTO EMP(ENAME, ENPMO, JOB, MGR, HIREDATE, SAL, COMM, DEPTNO)
+    VALUES(9000, '장원영', 'SALESMAN', 7698, SYSDATE, 2000, 1000, NULL);
+
+-- 왼쪽 외부 조인 사용하기
+SELECT ENAME, E.DEPTNO, DNAME
+FROM EMP E, DEPT D
+WHERE E.DEPTNO = D. DEPTNO(+)
+ORDER BY E.DEPTNO;
+
+SELECT * FROM DEPT;
+
+-- 오른쪽 외부 조인 사용하기
+SELECT E.ENAME, D.DEPTNO, D.DNAME
+FROM EMP E, DEPT D
+WHERE E.DEPTNO(+) = D.DEPTNO
+ORDER BY E.DEPTNO;
+
+-- SQL-99 표준문법으로 배우는 ANSI 조인----------------
+-- NATUAL JOIN : 등가 조인 대신 사용, 자동으로 같은 열을 찾아서 조인 해줌
+SELECT EMPNO, ENAME, JOB, MGR, HIREDATE, DEPTNO
+FROM EMP NATURAL JOIN DEPT;
+
+-- JOIN ~ USING : 등가 조인을 대신해서 사용, USING 키워드에 조인 기준 열을 명시하여 사용
+SELECT EMPNO, ENAME, JOB, MGR, HIREDATE, DEPTNO
+FROM EMP E JOIN DEPT D USING(DEPTNO);
+
+-- JOIN ~ ON : ANSI 등가 조인
+SELECT EMPNO, ENAME, JOB, MGR, HIREDATE, E.DEPTNO
+FROM EMP E JOIN DEPT D
+ON E.DEPTNO = D.DEPTNO
+
+-- ANSI LEFT OUTER JOIN 
+SELECT ENAME, E.DEPTNO, DNAME
+FROM EMP E LEFT OUTER JOIN DEPT D
+ON E.DEPTNO = D.DEPTNO
+ORDER BY E.DEPTNO;
+
+-- ANSI RIGHT OUTER JOIN 
+SELECT ENAME, D.DEPTNO, D.DNAME
+FROM EMP E RIGHT OUTER JOIN DEPT D 
+ON E.DEPTNO = D.DEPTNO
+ORDER BY E.DEPTNO;
+
+-- 1. 급여가 2000 초과인 사원들의 부서 정보, 사원 정보를 출력(오라클과 ANSI)
+SELECT E.DEPTNO, DNAME, EMPNO, ENAME, SAL
+FROM EMP E JOIN DEPT D
+ON E.DEPTNO = D.DEPTNO
+AND SAL > 2000;
+
+-- 2. 각 부서별 평균 급여, 최대 급여, 최소 급여, 사원수 출력
+SELECT DEPTNO, ROUND(AVG(SAL),2), MAX(SAL), MIN(SAL), COUNT(*)
+FROM EMP E JOIN DEPT D USING(DEPTNO)
+GROUP BY DEPTNO;
+
+--3. 모든 부서 정보화 사원 정보를 부서번호, 사원 이름순으로 정렬
+SELECT E.DEPTNO, DNAME, EMPNO, ENAME, JOB, SAL
+    FROM EMP E RIGHT OUTER JOIN DEPT D
+    ON E.DEPTNO = D.DEPTNO
+ORDER BY E.DEPTNO,ENAME;
